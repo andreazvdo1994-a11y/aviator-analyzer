@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Aviator Analyzer</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{margin:0;background:#090e19;color:white;font-family:Arial,sans-serif;padding:20px}
+
+header{text-align:center;padding:20px}
+
+h1{color:#ff424f;font-size:30px}
+
+.sub{color:#9ba8bd}
+
+.card{background:#151f30;padding:20px;border-radius:16px;margin:15px 0}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.stat{background:#202d42;padding:18px;border-radius:12px;text-align:center}
+
+.stat strong{display:block;font-size:25px;color:#36d69b;margin-top:8px}
+
+input{width:100%;padding:16px;border-radius:10px;border:1px solid #52627b;background:#0c1422;color:white;font-size:20px;margin:12px 0}
+
+button{width:100%;padding:16px;border:0;border-radius:10px;background:#e83e50;color:white;font-size:17px;font-weight:bold}
+
+.green{color:#36d69b}
+
+ul{padding-left:20px}
+
+li{padding:9px;border-bottom:1px solid #344057}
+
+.small{color:#9ba8bd;font-size:13px}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>✈ AVIATOR ANALYZER</h1>
+
+<div class="sub">Painel de análise estatística</div>
+
+</header>
+
+<div class="card">
+
+<h3>Adicionar resultado</h3>
+
+<input id="mult" type="number" min="1" step="0.01" placeholder="Ex: 2.45">
+
+<button onclick="add()">REGISTRAR RODADA</button>
+
+</div>
+
+<div class="card">
+
+<h3>Estatísticas gerais</h3>
+
+<div class="stats">
+
+<div class="stat">Rodadas<strong id="total">0</strong></div>
+
+<div class="stat">Acima de 2x<strong id="above">0</strong></div>
+
+<div class="stat">Taxa acima de 2x<strong id="rate">0%</strong></div>
+
+<div class="stat">Média geral<strong id="avg">0x</strong></div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Indicador estatístico</h3>
+
+<p id="indicator" class="green">Aguardando resultados...</p>
+
+<p class="small">A frequência passada não prevê a próxima rodada. Este indicador é descritivo, não uma previsão.</p>
+
+</div>
+
+<div class="card">
+
+<h3>Últimos resultados</h3>
+
+<ul id="history"></ul>
+
+<button onclick="clearHistory()" style="background:#39465c;margin-top:15px">LIMPAR HISTÓRICO</button>
+
+</div>
+
+<script>
+
+let data=JSON.parse(localStorage.getItem("aviatorData")||"[]");
+
+function add(){
+
+let value=parseFloat(document.getElementById("mult").value);
+
+if(!Number.isFinite(value)||value<1){
+
+alert("Digite um multiplicador válido.");
+
+return;
+
+}
+
+data.unshift(value);
+
+localStorage.setItem("aviatorData",JSON.stringify(data));
+
+document.getElementById("mult").value="";
+
+render();
+
+}
+
+function render(){
+
+let total=data.length;
+
+let above=data.filter(x=>x>=2).length;
+
+let avg=total?data.reduce((a,b)=>a+b,0)/total:0;
+
+document.getElementById("total").textContent=total;
+
+document.getElementById("above").textContent=above;
+
+document.getElementById("rate").textContent=
+
+(total?(above/total*100).toFixed(1):0)+"%";
+
+document.getElementById("avg").textContent=avg.toFixed(2)+"x";
+
+let recent=data.slice(0,20);
+
+document.getElementById("history").innerHTML=
+
+recent.map((x,i)=>"<li>Rodada "+(total-i)+" — <b>"+x.toFixed(2)+"x</b></li>").join("");
+
+let rate=total?above/total*100:0;
+
+document.getElementById("indicator").textContent=
+
+total<10?"Registre pelo menos 10 rodadas para ampliar a amostra.":
+
+"Na amostra registrada, "+rate.toFixed(1)+"% dos resultados foram iguais ou superiores a 2,00x.";
+
+}
+
+function clearHistory(){
+
+if(confirm("Deseja apagar todo o histórico?")){
+
+data=[];
+
+localStorage.removeItem("aviatorData");
+
+render();
+
+}
+
+}
+
+render();
+
+</script>
+
+</body>
+
+</html>
